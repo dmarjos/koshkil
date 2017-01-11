@@ -25,9 +25,10 @@
 		"classmap": [
 		],
 		"files": [
-		    "src/Koshkil/Framework/Core/functions.php"
+		    "src/Koshkil/Framework/Core/functions.php",
+		    "src/Koshkil/Framework/Core/Application.php",
 		],
-		"psr-0": {
+		"psr-4": {
             "Koshkil\\Framework" : "src"
         }
     }
