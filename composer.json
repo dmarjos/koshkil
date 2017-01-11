@@ -1,0 +1,33 @@
+{
+    "name": "koshkil/framework",
+    "description": "The Koshkil Framework.",
+    "keywords": ["framework", "koshkil"],
+    "license": "MIT",
+    "homepage": "http://koshkil.danielmarjos.com",
+    "support": {
+        "issues": "https://github.com/dmarjos/koshkil/issues",
+        "source": "https://github.com/dmarjos/koshkil"
+    },
+    "authors": [
+        {
+            "name": "Daniel Marjos",
+            "email": "koshkil.framework@danielmarjos.com"
+        }
+    ],
+    "require": {
+    },
+    "replace": {
+    },
+    "require-dev": {
+    },
+    "autoload": {
+		"classmap": [
+		],
+		"files": [
+		    "src/Koshkil/Framework/Core/functions.php"
+		],
+		"psr-0": {
+            "Koshkil\\Framework" : "src"
+        }
+    }
+}
