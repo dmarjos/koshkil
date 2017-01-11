@@ -1,5 +1,6 @@
 {
     "name": "koshkil/framework",
+    "version": "0.0.1",
     "description": "The Koshkil Framework.",
     "keywords": ["framework", "koshkil"],
     "license": "MIT",
