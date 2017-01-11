@@ -29,7 +29,7 @@
 		    "src/Koshkil/Framework/Core/Application.php"
 		],
 		"psr-4": {
-            "Koshkil\\Framework" : "src"
+            "Koshkil\\Framework\\" : "src/Koshkil/"
         }
     }
 }
