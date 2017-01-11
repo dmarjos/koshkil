@@ -26,10 +26,11 @@
 		],
 		"files": [
 		    "src/Koshkil/Framework/Core/functions.php",
+		    "src/Koshkil/Framework/Core/koshkil.php",
 		    "src/Koshkil/Framework/Core/Application.php"
 		],
 		"psr-4": {
-            "Koshkil\\Framework\\" : "src/Koshkil/"
+            "Koshkil\\" : "src/Koshkil/"
         }
     }
 }

@@ -1,6 +1,4 @@
 <?php
-namespace \Koshkil\Framework;
-
 class Application {
 	private static $config = array();
 
