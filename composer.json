@@ -26,7 +26,6 @@
 		],
 		"files": [
 		    "src/Koshkil/Framework/Core/functions.php",
-		    "src/Koshkil/Framework/Core/koshkil.php",
 		    "src/Koshkil/Framework/Core/Application.php"
 		],
 		"psr-4": {
