@@ -1,7 +1,7 @@
 <?php
 namespace Koshkil\Framework\Support;
 
-class Collection implements ArrayAccess, Countable, IteratorAggregate {
+class Collection implements \ArrayAccess, \Countable, \IteratorAggregate {
 
 	private $attributes=array();
 	private $items=array();

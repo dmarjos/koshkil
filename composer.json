@@ -1,6 +1,6 @@
 {
     "name": "koshkil/framework",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "The Koshkil Framework.",
     "keywords": ["framework", "koshkil"],
     "license": "MIT",
@@ -23,10 +23,10 @@
     },
     "autoload": {
 		"classmap": [
+			"src/Koshkil/Framework/Core/Application.php"
 		],
 		"files": [
-		    "src/Koshkil/Framework/Core/functions.php",
-		    "src/Koshkil/Framework/Core/Application.php"
+		    "src/Koshkil/Framework/Core/functions.php"
 		],
 		"psr-4": {
             "Koshkil\\" : "src/Koshkil/"
