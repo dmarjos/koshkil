@@ -4,6 +4,7 @@ namespace Koshkil\Framework\Core\Web\Widgets;
 use Koshkil\Framework\Core\Web\Widget;
 use Koshkil\Framework\Core\Web\Support\Request;
 use Koshkil\Framework\Support\StringUtils;
+use Koshkil\Framework\Core\Application;
 
 class FormWidget extends Widget {
 

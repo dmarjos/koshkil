@@ -1,5 +1,6 @@
 <?php
 use Koshkil\Framework\Core\Web\Support\Request;
+use Koshkil\Framework\Core\Application;
 
 function smarty_function_html_widget($params, &$template) {
 	$wgType=$params["name"];
@@ -12,6 +13,7 @@ function smarty_function_html_widget($params, &$template) {
 		$widgetPath=implode("\\",$widgetPath).".".$className;
 	}
 	$namespaces=[
+		"app\\".Application::get("APP_NAME")."\\Widgets"=>"app/".Application::get("APP_NAME")."/Widgets",
 		"app\\Widgets"=>"app/Widgets",
 		"Koshkil\\Framework\\Core\\Web\\Widgets"=>"vendor/koshkil/framework/src/Koshkil/Framework/Core/Web/Widgets",
 	];
@@ -22,7 +24,6 @@ function smarty_function_html_widget($params, &$template) {
 		if (!file_exists(Application::get("PHYS_PATH")."/{$path}/{$className}.php"))
 			continue;
 
-		echo Application::get("PHYS_PATH")."/{$path}/{$className}.php<br/>";
 		require_once(Application::get("PHYS_PATH")."/{$path}/{$className}.php");
 		try {
 			$widget=new $_className();

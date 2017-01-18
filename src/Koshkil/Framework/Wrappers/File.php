@@ -1,5 +1,6 @@
 <?php
 namespace Koshkil\Framework\Wrappers;
+use Koshkil\Framework\Core\Application;
 
 class File {
 

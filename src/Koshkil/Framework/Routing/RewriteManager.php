@@ -2,6 +2,7 @@
 namespace Koshkil\Framework\Routing;
 
 use Koshkil\Framework\Support\StringUtils;
+use Koshkil\Framework\Core\Application;
 
 class RewriteManager {
 

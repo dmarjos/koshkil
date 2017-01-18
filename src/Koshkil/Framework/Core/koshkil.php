@@ -5,6 +5,7 @@ use Koshkil\Framework\Routing\RewriteManager;
 use Koshkil\Framework\Routing\RoutesManager;
 use Koshkil\Framework\Core\Web\Controller;
 use Koshkil\Framework\Core\Exceptions\ControllerNotFound;
+use Koshkil\Framework\Core\Application;
 
 class koshkil {
 
@@ -38,15 +39,29 @@ class koshkil {
 		if (substr($uri,0,2)=="//") $uri=substr($uri,1);
 
 
-		$controllerNamespace="app/Controllers".dirname($uri);
-		$controller=Application::get("PHYS_PATH")."/app/Controllers".$uri.".php";
+		$controllerNamespace="app";
+		if (Application::get("APP_NAME"))
+			$controllerNamespace.="/".Application::get("APP_NAME");
+		$controllerNamespace.="/Controllers".dirname($uri);
+		$controller=Application::get("APPLICATION_DIR")."/Controllers".$uri.".php";
 		Application::set("RUNNING_CONTROLLER",$uri);
 
+		$mainControllerNamespace.="/Controllers/LocalController";
+		$mainController=Application::get("APPLICATION_DIR")."/Controllers/LocalController.php";
+
+		if (file_exists($mainController)) {
+			$className=basename($mainController,".php");
+			$mainControllerNamespace.=(substr($mainControllerNamespace,-1)!="/"?"/":"").$className;
+			$mainControllerNamespace=implode("\\",explode("/",$mainControllerNamespace));
+
+			require_once($mainController);
+
+		}
 		if (!file_exists($controller)) {
 			$defaultController=Application::get("DEFAULT_CONTROLLER");
 			$defaultController=str_replace(".php","",$defaultController);
 			if (substr($defaultController,0,1)!="/") $defaultController="/".$defaultController;
-			$controller=Application::get("PHYS_PATH")."/app/Controllers{$defaultController}.php";
+			$controller=Application::get("APPLICATION_DIR")."/Controllers{$defaultController}.php";
 			if (!file_exists($controller)) {
 				throw new ControllerNotFound("Controller not found (".Application::get("RUNNING_CONTROLLER").") and not default controller found");
 			}

@@ -2,6 +2,7 @@
 namespace Koshkil\Framework\Core\Web;
 
 use Koshkil\Framework\Core\Web\Support\Request;
+use Koshkil\Framework\Core\Application;
 
 class Widget extends Controller {
 
@@ -24,6 +25,7 @@ class Widget extends Controller {
 	protected function output(Request $request) {
 		$templateName=implode("/",explode("\\",strtolower(get_class($this))));
 		$namespaces=[
+			"app/".Application::get("APP_NAME")."/widgets"=>Application::get("TEMPLATES_DIR")."/widgets",
 			"app/widgets"=>Application::get("TEMPLATES_DIR")."/widgets",
 			"koshkil/framework/core/web/widgets"=>Application::get("VENDOR_DIR")."/views/widgets",
 		];

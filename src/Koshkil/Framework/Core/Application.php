@@ -1,4 +1,6 @@
 <?php
+namespace Koshkil\Framework\Core;
+
 class Application {
 	private static $config = array();
 	public static $page=null;
@@ -26,10 +28,11 @@ class Application {
 
 	public static function loadConfig($configFiles=false,$debug=false) {
 		$physicalFolder=dirname($_SERVER["DOCUMENT_ROOT"]);
+		self::set("PUBLIC_FOLDER",$_SERVER["DOCUMENT_ROOT"]);
 		self::set("DEFAULT_CONTROLLER","index");
 		self::set("LOG_USERS","true");
 		self::set("PHYS_PATH",$physicalFolder);
-		$webPath=str_replace(realpath($_SERVER["DOCUMENT_ROOT"]),'',$physicalFolder);
+		$webPath=str_replace(realpath(dirname($_SERVER["DOCUMENT_ROOT"])),'',$physicalFolder);
 		self::set("WEB_PATH",$webPath);
 		$configFolder=$physicalFolder."/config";
 
@@ -55,20 +58,33 @@ class Application {
 			}
 		}
 
-		$templatesDir=Application::get("PHYS_PATH")."/resources/views";
-		$storageDir=Application::get("PHYS_PATH")."/storage";
-		if (Application::Get("DEFAULT_THEME")) {
+		$templatesDir=self::get("PHYS_PATH")."/resources/views";
+		$storageDir=self::get("PHYS_PATH")."/storage";
+
+		if (self::get("APP_NAME")) {
+			$templatesDir=Application::get("PHYS_PATH")."/resources/views/".Application::get("APP_NAME");
+			$storageDir=Application::get("PHYS_PATH")."/storage/".Application::get("APP_NAME");
+		}
+
+		if (self::Get("DEFAULT_THEME")) {
 			$themeTemplateDir=$templatesDir."/themes/".Application::Get("DEFAULT_THEME");
 			if (file_exists($themeTemplateDir))
 				$templatesDir=$themeTemplateDir;
 		}
 
-		Application::set("TEMPLATES_DIR",$templatesDir);
-		Application::set("STORAGE_DIR",$storageDir);
+		self::set("TEMPLATES_DIR",$templatesDir);
+		self::set("STORAGE_DIR",$storageDir);
 
-		Application::set("VENDOR_DIR",dirname(dirname(dirname(__FILE__))));
+		self::set("VENDOR_DIR",dirname(dirname(dirname(__FILE__))));
 
-		$urlsFolder=$physicalFolder."/app/url";
+		$appFolder=$physicalFolder."/app";
+		if (Application::get("APP_NAME"))
+			$appFolder.="/".Application::get("APP_NAME");
+
+		$urlsFolder=$appFolder."/url";
+
+		self::set("APPLICATION_DIR",$appFolder);
+
 		require_once("{$urlsFolder}/rules.php");
 		require_once("{$urlsFolder}/routes.php");
 
@@ -91,6 +107,7 @@ class Application {
 	}
 
 	public static function getLink($path) {
+//		self::dumpConfig();
 		$path_info = parse_url($path);
 		if ($path_info["scheme"] && $path_info["host"])
 			return $path;
@@ -109,7 +126,64 @@ class Application {
 
 		$doubleBaseDir = Application::get("BASE_DIR") . Application::get("BASE_DIR");
 		$retVal = str_replace($doubleBaseDir, Application::get("BASE_DIR"), $retVal);
+
 		return $retVal;
+	}
+
+	public static function getPath($path) {
+//		self::dumpConfig();
+		$path_info = parse_url($path);
+		if ($path_info["scheme"] && $path_info["host"])
+			return $path;
+		$retVal = "";
+		if (substr($path, 0, 1) != "/")
+			$path = "/" . $path;
+		if (self::$config["MOD_REWRITE"])
+			$retVal = self::get("WEB_PATH") . $path;
+		else
+			$retVal = self::get("WEB_PATH") . "/index.php" . $path;
+
+		$retVal = str_replace("\\", "/", $retVal);
+		$retVal = str_replace("//", "/", $retVal);
+		$retVal = str_replace("/index.php//", "/index.php/", $retVal);
+		$retVal = str_replace("/index.php/index.php/", "/index.php/", $retVal);
+
+		$doubleBaseDir = Application::get("BASE_DIR") . Application::get("BASE_DIR");
+		$retVal = str_replace($doubleBaseDir, Application::get("BASE_DIR"), $retVal);
+		if (self::get("APP_NAME"))
+			$retVal="/".self::get("APP_NAME").$retVal;
+
+		return $retVal;
+	}
+
+	public static function getAsset($path,$full=false) {
+		$path_info = parse_url($path);
+		if ($path_info["scheme"] && $path_info["host"])
+			return $path;
+		$retVal = "";
+		if (substr($path, 0, 1) != "/")
+			$path = "/" . $path;
+		if (self::$config["MOD_REWRITE"])
+			$retVal = self::get("WEB_PATH") . $path;
+		else
+			$retVal = self::get("WEB_PATH") . "/index.php" . $path;
+
+		$retVal = str_replace("\\", "/", $retVal);
+		$retVal = str_replace("//", "/", $retVal);
+		$retVal = str_replace("/index.php//", "/index.php/", $retVal);
+		$retVal = str_replace("/index.php/index.php/", "/index.php/", $retVal);
+
+		$doubleBaseDir = Application::get("BASE_DIR") . Application::get("BASE_DIR");
+		$retVal = str_replace($doubleBaseDir, Application::get("BASE_DIR"), $retVal);
+
+
+		if (self::get("DEFAULT_THEME"))
+			$retVal="/".self::get("DEFAULT_THEME").$retVal;
+
+		if ($full && self::get("APP_NAME"))
+			$retVal="/".self::get("APP_NAME").$retVal;
+
+		return "http://".$_SERVER["SERVER_NAME"].$retVal;
 	}
 
 	public static function setWidgetParameters($name, $parameters) {

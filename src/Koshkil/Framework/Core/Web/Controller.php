@@ -3,7 +3,7 @@ namespace Koshkil\Framework\Core\Web;
 
 use Koshkil\Framework\Core\Web\Support\Request;
 use Koshkil\Framework\Core\Exceptions\TemplateNotFound;
-
+use Koshkil\Framework\Core\Application;
 
 abstract class Controller {
 
@@ -77,6 +77,7 @@ abstract class Controller {
 			$templatesDir=Application::get("TEMPLATES_DIR");
 
 			if (!file_exists($templatesDir."/{$template}")) {
+				dump_var("{$templatesDir}/{$template}");
 				echo "<!-- {$templatesDir}/{$template} -->";
 				$template="404.tpl";
 			}
@@ -95,7 +96,7 @@ abstract class Controller {
 	public function execute() {
 		$request=new Request();
 		foreach($this->lifeCycle as $method) {
-			if(!call_user_func([$this,$method],$request))
+			if(call_user_func([$this,$method],$request)===false)
 				break;
 		}
 	}

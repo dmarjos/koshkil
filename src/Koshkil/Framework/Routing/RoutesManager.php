@@ -1,6 +1,8 @@
 <?php
 namespace Koshkil\Framework\Routing;
 
+use Koshkil\Framework\Core\Application;
+
 class RoutesManager {
 	private static $routes=[];
 	private static $groups=[];

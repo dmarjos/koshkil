@@ -2,6 +2,7 @@
 namespace Koshkil\Framework\DB;
 
 use Koshkil\Framework\Support\Collection;
+use Koshkil\Framework\Core\Application;
 
 class QueryBuilder {
 	private $db;
