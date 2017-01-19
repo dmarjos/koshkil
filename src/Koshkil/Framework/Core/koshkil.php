@@ -46,17 +46,6 @@ class koshkil {
 		$controller=Application::get("APPLICATION_DIR")."/Controllers".$uri.".php";
 		Application::set("RUNNING_CONTROLLER",$uri);
 
-		$mainControllerNamespace.="/Controllers/LocalController";
-		$mainController=Application::get("APPLICATION_DIR")."/Controllers/LocalController.php";
-
-		if (file_exists($mainController)) {
-			$className=basename($mainController,".php");
-			$mainControllerNamespace.=(substr($mainControllerNamespace,-1)!="/"?"/":"").$className;
-			$mainControllerNamespace=implode("\\",explode("/",$mainControllerNamespace));
-
-			require_once($mainController);
-
-		}
 		if (!file_exists($controller)) {
 			$defaultController=Application::get("DEFAULT_CONTROLLER");
 			$defaultController=str_replace(".php","",$defaultController);

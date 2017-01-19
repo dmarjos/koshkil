@@ -24,8 +24,12 @@ class QueryBuilder {
 
 	private $debug=false;
 
-	private $_collectionClass="Collection";
+	private $_collectionClass="Koshkil\Framework\Support\Collection";
 
+	public function __construct() {
+		if (!Application::get("DB"))
+			Application::getDatabase();
+	}
 	public function clear() {
 		$this->_compiled=false;
 		$this->_fields="";
@@ -285,7 +289,7 @@ class QueryBuilder {
 			}
 		}
 		$this->_compiled=true;
-		$sql=Application::$db->getSQL(array("debug"=>$this->_debug,"fields"=>$this->_fields,"table"=>$this->_table.$this->_joinedTables,"grouping"=>$this->_groupBy,"having"=>$this->_having),$this->_where,$this->_orderBy,$this->_offset,$this->_limit);
+		$sql=Application::get("DB")->getSQL(array("debug"=>$this->_debug,"fields"=>$this->_fields,"table"=>$this->_table.$this->_joinedTables,"grouping"=>$this->_groupBy,"having"=>$this->_having),$this->_where,$this->_orderBy,$this->_offset,$this->_limit);
 		return $sql;
 	}
 
@@ -305,7 +309,7 @@ class QueryBuilder {
 			$sql=$this->compile();
 
 		if ($this->_debug) error_log("[SQL DEBUG]:{$sql}");
-		$records=Application::$db->getRecords(array("fields"=>$this->_fields,"table"=>$this->_table.$this->_joinedTables,"grouping"=>$this->_groupBy,"having"=>$this->_having),$this->_where,$this->_orderBy,$this->_offset,$this->_limit);
+		$records=Application::get("DB")->getRecords(array("fields"=>$this->_fields,"table"=>$this->_table.$this->_joinedTables,"grouping"=>$this->_groupBy,"having"=>$this->_having),$this->_where,$this->_orderBy,$this->_offset,$this->_limit);
 		$this->affectedRecords=count($records["data"]);
 		$this->totalRecords=intval($records["records"]);
 		if (is_string($this->_className) && class_exists($this->_className,false)) {
@@ -453,7 +457,7 @@ class QueryBuilder {
 		if (!$this->_compiled)
 			$sql=$this->compile();
 
-		$primaryKey=Application::$db->insert($this->_table,$data);
+		$primaryKey=Application::get("DB")->insert($this->_table,$data);
 
 		$auxModel=new $this->_className;
 		if ($auxModel->indexField)
@@ -472,13 +476,13 @@ class QueryBuilder {
 
 		$auxModel=new $this->_className;
 
-		$primaryKey=Application::$db->update($this->_table,$data,array($auxModel->indexField."=".$data[$auxModel->indexField]));
+		$primaryKey=Application::get("DB")->update($this->_table,$data,array($auxModel->indexField."=".$data[$auxModel->indexField]));
 		return $this->where($auxModel->indexField,$data[$primaryKey])->first();
 	}
 
 	public function delete() {
 		if (empty($this->_where)) $this->empty(array($auxModel->indexField."=".$data[$auxModel->indexField]));
-		Application::$db->delete($this->_table, $this->_where);
+		Application::get("DB")->delete($this->_table, $this->_where);
 		return true;
 	}
 

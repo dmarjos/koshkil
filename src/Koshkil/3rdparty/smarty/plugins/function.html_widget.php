@@ -21,9 +21,9 @@ function smarty_function_html_widget($params, &$template) {
 	$widget=null;
 	foreach($namespaces as $namespace => $path) {
 		$_className=$namespace."\\".$className;
-		if (!file_exists(Application::get("PHYS_PATH")."/{$path}/{$className}.php"))
+		if (!file_exists(Application::get("PHYS_PATH")."/{$path}/{$className}.php")) {
 			continue;
-
+		}
 		require_once(Application::get("PHYS_PATH")."/{$path}/{$className}.php");
 		try {
 			$widget=new $_className();

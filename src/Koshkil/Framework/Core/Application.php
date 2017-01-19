@@ -4,6 +4,7 @@ namespace Koshkil\Framework\Core;
 class Application {
 	private static $config = array();
 	public static $page=null;
+	public static $db;
 
 	public static function set($var,$val) {
 		if (!is_null($val)) {
@@ -62,8 +63,8 @@ class Application {
 		$storageDir=self::get("PHYS_PATH")."/storage";
 
 		if (self::get("APP_NAME")) {
-			$templatesDir=Application::get("PHYS_PATH")."/resources/views/".Application::get("APP_NAME");
-			$storageDir=Application::get("PHYS_PATH")."/storage/".Application::get("APP_NAME");
+			$templatesDir=Application::get("PHYS_PATH")."/resources/views/".strtolower(Application::get("APP_NAME"));
+			$storageDir=Application::get("PHYS_PATH")."/storage/".strtolower(Application::get("APP_NAME"));
 		}
 
 		if (self::Get("DEFAULT_THEME")) {
@@ -77,9 +78,12 @@ class Application {
 
 		self::set("VENDOR_DIR",dirname(dirname(dirname(__FILE__))));
 
+		self::$db=self::getDatabase();
 		$appFolder=$physicalFolder."/app";
-		if (Application::get("APP_NAME"))
+		if (Application::get("APP_NAME")) {
+			Application::set("APP_NAME",ucfirst(strtolower(Application::get("APP_NAME"))));
 			$appFolder.="/".Application::get("APP_NAME");
+		}
 
 		$urlsFolder=$appFolder."/url";
 
@@ -124,14 +128,17 @@ class Application {
 		$retVal = str_replace("/index.php//", "/index.php/", $retVal);
 		$retVal = str_replace("/index.php/index.php/", "/index.php/", $retVal);
 
-		$doubleBaseDir = Application::get("BASE_DIR") . Application::get("BASE_DIR");
-		$retVal = str_replace($doubleBaseDir, Application::get("BASE_DIR"), $retVal);
-
 		return $retVal;
 	}
 
-	public static function getPath($path) {
+	public static function getPath($path,$withinTheme=false) {
 //		self::dumpConfig();
+		if(is_array($path)) {
+			if (!isset($path["file"]))
+				throw new Exception("getPath requires a string, or an array with a ['file'] element in it");
+
+			$path=$path["file"];
+		}
 		$path_info = parse_url($path);
 		if ($path_info["scheme"] && $path_info["host"])
 			return $path;
@@ -148,42 +155,14 @@ class Application {
 		$retVal = str_replace("/index.php//", "/index.php/", $retVal);
 		$retVal = str_replace("/index.php/index.php/", "/index.php/", $retVal);
 
-		$doubleBaseDir = Application::get("BASE_DIR") . Application::get("BASE_DIR");
-		$retVal = str_replace($doubleBaseDir, Application::get("BASE_DIR"), $retVal);
-		if (self::get("APP_NAME"))
-			$retVal="/".self::get("APP_NAME").$retVal;
-
-		return $retVal;
-	}
-
-	public static function getAsset($path,$full=false) {
-		$path_info = parse_url($path);
-		if ($path_info["scheme"] && $path_info["host"])
-			return $path;
-		$retVal = "";
-		if (substr($path, 0, 1) != "/")
-			$path = "/" . $path;
-		if (self::$config["MOD_REWRITE"])
-			$retVal = self::get("WEB_PATH") . $path;
-		else
-			$retVal = self::get("WEB_PATH") . "/index.php" . $path;
-
-		$retVal = str_replace("\\", "/", $retVal);
-		$retVal = str_replace("//", "/", $retVal);
-		$retVal = str_replace("/index.php//", "/index.php/", $retVal);
-		$retVal = str_replace("/index.php/index.php/", "/index.php/", $retVal);
-
-		$doubleBaseDir = Application::get("BASE_DIR") . Application::get("BASE_DIR");
-		$retVal = str_replace($doubleBaseDir, Application::get("BASE_DIR"), $retVal);
-
-
-		if (self::get("DEFAULT_THEME"))
+		if ($withinTheme && self::get("DEFAULT_THEME"))
 			$retVal="/".self::get("DEFAULT_THEME").$retVal;
 
-		if ($full && self::get("APP_NAME"))
-			$retVal="/".self::get("APP_NAME").$retVal;
+		return $retVal;
+	}
 
-		return "http://".$_SERVER["SERVER_NAME"].$retVal;
+	public static function getAsset($path,$withinTheme=false) {
+		return "http://".$_SERVER["SERVER_NAME"].self::getPath($path,$withinTheme);
 	}
 
 	public static function setWidgetParameters($name, $parameters) {
@@ -201,4 +180,80 @@ class Application {
 		return $params[$name];
 	}
 
+	public static function getDatabase($prefix = "") {
+		if ($prefix)
+			$prefix = strtoupper("{$prefix}_");
+		$db = self::get("{$prefix}DB");
+		if ($db == null) {
+			if (self::get("{$prefix}DB_DRIVER") && self::get("{$prefix}DB_HOST") && self::get("{$prefix}DB_NAME") && self::get("{$prefix}DB_USER")) {
+				$driver = ucwords(strtolower(self::get("{$prefix}DB_DRIVER")));
+
+				$className = "Koshkil\\Framework\\DB\\Drivers\\" . $driver;
+				require_once(dirname(Application::get("VENDOR_DIR"))."/".implode("/",explode("\\",$className)).".php");
+				$className.="Driver";
+				try {
+					$db = new $className(self::get("{$prefix}DB_HOST"), self::get("{$prefix}DB_USER"), self::get("{$prefix}DB_PASS"), self::get("{$prefix}DB_NAME"));
+				} catch (EDatabaseError $e) {
+				}
+				self::set("{$prefix}DB", $db);
+			}
+		}
+
+	}
+
+	public static function addScript($path, $forceTop = false) {
+		$scripts = Application::get("scripts");
+		if (!is_array($scripts))
+			$scripts = array();
+
+		$parsedPath=[];
+		if (is_string($path))
+			$parsedPath=parse_url($path);
+
+		if (isset($parsedPath["scheme"]) && isset($parsedPath["host"])) {
+			$script=$path;
+		} else {
+			$script=self::getPath($path);
+
+			if (is_array($path))
+				$path["file"] = $script;
+			else
+				$path = $script;
+		}
+
+		if (!in_array($script, $scripts)) {
+			if ($forceTop)
+				array_unshift($scripts, $script);
+			else
+				$scripts[]=$script;
+		}
+
+		Application::set("scripts", $scripts);
+	}
+
+	public static function addStyle($path,$withinTheme=false) {
+		$styles = Application::get("styles");
+		if (!$styles)
+			$styles = array();
+
+		$parsedPath=[];
+		if (is_string($path))
+			$parsedPath=parse_url($path);
+
+		if (isset($parsedPath["scheme"]) && isset($parsedPath["host"])) {
+			$fileName=$path;
+		} else {
+			$fileName=self::getPath($path,$withinTheme);
+
+			if (is_array($path))
+				$path["file"] = $fileName;
+			else
+				$path = $fileName;
+		}
+
+
+		$styles[$fileName] = $path;
+		Application::set("styles", $styles);
+
+	}
 }

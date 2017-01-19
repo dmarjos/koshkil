@@ -45,6 +45,10 @@ abstract class Controller {
 		return true;
 	}
 
+	public function isLoggedIn() {
+		return false;
+	}
+
 	protected function output(Request $request) {
         $this->view->assign("scripts",Application::get("scripts"));
         $this->view->assign("bottom_scripts",Application::get("bottom_scripts"));

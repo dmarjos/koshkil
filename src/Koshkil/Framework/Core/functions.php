@@ -16,11 +16,16 @@ if (!function_exists("dump_var")) {
 	}
 }
 
-function __autoload($className) {
-echo "wtf?!?!?!?!?!?<br/>";
-	dump_var($className);
+function app() {
+	$method=null;
+	$parameters=func_get_args();
+	if(count($parameters)>0)
+		$method=array_shift($parameters);
+	if (!is_null($method) && method_exists(Application::$page,$method)) {
+		return call_user_func_array([Application::$page,$method], $parameters);
+	} else
+		return Application::$page;
 }
-
 function get($var,$src=null) {
 	return Application::get($var,$src);
 }
@@ -29,7 +34,7 @@ function getLink($path) {
 	return Application::getLink($path);
 }
 
-function asset($path) {
-	return Application::getAsset($path);
+function asset($path,$withinTheme=false) {
+	return Application::getAsset($path,$withinTheme);
 }
 

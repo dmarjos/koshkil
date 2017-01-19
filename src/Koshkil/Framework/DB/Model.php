@@ -2,8 +2,10 @@
 namespace Koshkil\Framework\DB;
 
 use Koshkil\Framework\DB\QueryBuilder;
+use Koshkil\Framework\Support\StringUtils;
+use Koshkil\Framework\Core\Application;
 
-class Model implements ArrayAccess {
+class Model implements \ArrayAccess {
 
 	private $qb;
 
@@ -41,6 +43,38 @@ class Model implements ArrayAccess {
 
 	public function builder() {
 		return $this->qb;
+	}
+
+	protected function belongsTo() {
+		$parameters=func_get_args();
+		$relatedModel=array_shift($parameters);
+
+		$modelNamespace="/Models/".$relatedModel;
+		$model=Application::get("APPLICATION_DIR")."{$modelNamespace}";
+		$modelNamespace="app";
+		if(Application::get("APP_NAME"))
+			$modelNamespace.="\\".Application::get("APP_NAME");
+		$modelNamespace.="\\Models\\{$relatedModel}";
+		//dump_var($model);
+		require_once($model.".php");
+		$dummyModel=new $modelNamespace();
+		$localValue=array_shift($parameters);
+		$relatedPrimaryKey=array_shift($parameters);
+
+		if (is_null($relatedPrimaryKey) && is_null($localValue)) {
+			return $modelNamespace::find($this->{$modelNamespace::getIndexField()});
+		} else if (!is_null($localValue) && is_null($relatedPrimaryKey)) {
+			return $modelNamespace::where($modelNamespace::getIndexField(),$this->{$localValue})->first();
+		} else {
+			return $modelNamespace::where($relatedPrimaryKey,$this->{$localValue})->first();
+		}
+	}
+
+	public static function getIndexField() {
+		$dummy=new static;
+		$retVal=$dummy->indexField;
+		unset($dummy);
+		return $retVal;
 	}
 
 	public function fill($data,$prefix="") {
@@ -89,21 +123,22 @@ class Model implements ArrayAccess {
 
 	public function encodeFieldValue($value) {
 		if (!is_string($value)) return $value;
-//		if (stringUtils::hasUTF8Chars($value))
+//		if (StringUtils::hasUTF8Chars($value))
 //			$value=utf8_encode($value);
 
 		if(ini_get('default_charset')=="UTF-8")
 			$value=utf8_decode($value);
 		$value=htmlentities($value,ENT_COMPAT | ENT_HTML401,"ISO-8859-1");
-		$value=stringUtils::replace_all("[:euro:]","&euro;",$value);
-		$value=stringUtils::replace_all("&lt;","<",$value);
-		$value=stringUtils::replace_all("&gt;",">",$value);
-		$value=stringUtils::replace_all("&amp;","&",$value);
+		$value=StringUtils::replace_all("[:euro:]","&euro;",$value);
+		$value=StringUtils::replace_all("&lt;","<",$value);
+		$value=StringUtils::replace_all("&gt;",">",$value);
+		$value=StringUtils::replace_all("&amp;","&",$value);
+		$value=StringUtils::replace_all("&quot;",'"',$value);
 		return $value;
 	}
 
 	public function decodeFieldValue($value) {
-		$value=stringUtils::replace_all("&euro;","[:euro:]",$value);
+		$value=StringUtils::replace_all("&euro;","[:euro:]",$value);
 		return $value;
 	}
 
@@ -116,7 +151,7 @@ class Model implements ArrayAccess {
 			if (preg_match_all("/([0-9]{4})\-([0-9]{2})\-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})/si",$retVal,$matches)) {
 				list($d,$t)=explode(" ",$retVal);
 				$d=implode("/",array_reverse(explode("-",$d)));
-				$retVal=$d." ".$t;
+				$retVal=$d.($t!="00:00:00"?" ".$t:'');
 			} else if (preg_match_all("/([0-9]{4})\-([0-9]{2})\-([0-9]{2})/si",$retVal,$matches)) {
 				$retVal=implode("/",array_reverse(explode("-",$retVal)));
 			}

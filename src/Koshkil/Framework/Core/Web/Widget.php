@@ -25,7 +25,7 @@ class Widget extends Controller {
 	protected function output(Request $request) {
 		$templateName=implode("/",explode("\\",strtolower(get_class($this))));
 		$namespaces=[
-			"app/".Application::get("APP_NAME")."/widgets"=>Application::get("TEMPLATES_DIR")."/widgets",
+			"app/".strtolower(Application::get("APP_NAME"))."/widgets"=>Application::get("TEMPLATES_DIR")."/widgets",
 			"app/widgets"=>Application::get("TEMPLATES_DIR")."/widgets",
 			"koshkil/framework/core/web/widgets"=>Application::get("VENDOR_DIR")."/views/widgets",
 		];
@@ -37,6 +37,7 @@ class Widget extends Controller {
 			}
 		}
 		if (substr($templateName,-6)=="widget") $templateName=substr($templateName,0,-6);
+//		dump_var($templateName);
 		return $this->view->fetch("{$templateName}.tpl");
 	}
 
