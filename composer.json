@@ -16,6 +16,8 @@
         }
     ],
     "require": {
+    	"smarty/smarty":"^3.1",
+    	"google/recapcha":"~1.2"
     },
     "replace": {
     },
