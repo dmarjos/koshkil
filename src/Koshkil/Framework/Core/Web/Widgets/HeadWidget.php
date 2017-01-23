@@ -115,6 +115,7 @@ class HeadWidget extends Widget {
 
 		$this->view->assign("SERVER_NAME",$_SERVER["SERVER_NAME"]);
 
+		$this->view->assign("title",Application::get("SYSTEM_TITLE"));
 		$this->view->assign("scripts",$scripts);
 		$this->view->assign("styles",$styles);
 	}

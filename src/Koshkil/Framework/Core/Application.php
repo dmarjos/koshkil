@@ -131,7 +131,7 @@ class Application {
 		return $retVal;
 	}
 
-	public static function getPath($path,$withinTheme=false) {
+	public static function getPath($path,$withinTheme=false,$theme=null) {
 //		self::dumpConfig();
 		if(is_array($path)) {
 			if (!isset($path["file"]))
@@ -155,14 +155,16 @@ class Application {
 		$retVal = str_replace("/index.php//", "/index.php/", $retVal);
 		$retVal = str_replace("/index.php/index.php/", "/index.php/", $retVal);
 
-		if ($withinTheme && self::get("DEFAULT_THEME"))
+		if ($withinTheme && $theme)
+			$retVal="/".$theme.$retVal;
+		else if ($withinTheme && self::get("DEFAULT_THEME"))
 			$retVal="/".self::get("DEFAULT_THEME").$retVal;
 
 		return $retVal;
 	}
 
-	public static function getAsset($path,$withinTheme=false) {
-		return "http://".$_SERVER["SERVER_NAME"].self::getPath($path,$withinTheme);
+	public static function getAsset($path,$withinTheme=false,$theme=null) {
+		return "http://".$_SERVER["SERVER_NAME"].self::getPath($path,$withinTheme,$theme);
 	}
 
 	public static function setWidgetParameters($name, $parameters) {

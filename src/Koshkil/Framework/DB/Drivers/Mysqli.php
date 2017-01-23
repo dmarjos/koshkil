@@ -81,7 +81,7 @@ class MysqliDriver {
 		}
 		$fields=array();
 		foreach($data as $field => $value) {
-			$escapedValue=Application::escape($value);
+			$escapedValue=$this->escape($value);
 			if (!is_null($value))
 				$fields[]="{$field}='{$escapedValue}'";
 			else

@@ -34,7 +34,7 @@ function getLink($path) {
 	return Application::getLink($path);
 }
 
-function asset($path,$withinTheme=false) {
-	return Application::getAsset($path,$withinTheme);
+function asset($path,$withinTheme=false,$theme=null) {
+	return Application::getAsset($path,$withinTheme,$theme);
 }
 

@@ -4,10 +4,14 @@ namespace Koshkil\Framework\DB;
 use Koshkil\Framework\DB\QueryBuilder;
 use Koshkil\Framework\Support\StringUtils;
 use Koshkil\Framework\Core\Application;
+use Koshkil\Framework\DB\Structure\Manager;
 
 class Model implements \ArrayAccess {
 
 	private $qb;
+
+	protected $autoManage=true;
+	protected $structure=[];
 
 	// On which table it shall work
 	protected $table="";
@@ -31,8 +35,14 @@ class Model implements \ArrayAccess {
 
 
 	public function __construct() {
+		$this->setupTableStructure();
+		if ($this->autoManage) {
+			Manager::checkTable($this);
+		}
 		$this->initBuilder();
 	}
+
+	protected function setupTableStructure() {}
 
 	public function initBuilder() {
 		$this->qb=new QueryBuilder();
@@ -251,5 +261,10 @@ class Model implements \ArrayAccess {
 		return serialize($this->attributes);
 	}
 
-
+	public function getStructure() {
+		return $this->structure;
+	}
+	public function getTableName() {
+		return $this->table;
+	}
 }

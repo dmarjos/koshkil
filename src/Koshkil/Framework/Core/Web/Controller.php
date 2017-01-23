@@ -4,6 +4,7 @@ namespace Koshkil\Framework\Core\Web;
 use Koshkil\Framework\Core\Web\Support\Request;
 use Koshkil\Framework\Core\Exceptions\TemplateNotFound;
 use Koshkil\Framework\Core\Application;
+use Koshkil\Framework\Support\Session\Auth;
 
 abstract class Controller {
 
@@ -21,6 +22,8 @@ abstract class Controller {
 		$this->view=new \Smarty();
 
 		$this->view->addPluginsDir(Application::get("VENDOR_DIR")."/3rdparty/smarty/plugins");
+		$this->view->registerClass('Application','Koshkil\Framework\Core\Application');
+		$this->view->registerClass('Auth','Koshkil\Framework\Support\Session\Auth');
 
 		$this->templateFile="main.tpl";
 		//dump_var($this->view);
@@ -31,6 +34,7 @@ abstract class Controller {
 		$this->view->setTemplateDir($templatesDir);
 
     	$this->view->assign("template","empty.tpl");
+		Auth::setAuthNamespace('frontend');
 	}
 
 	protected function create(Request $request) {

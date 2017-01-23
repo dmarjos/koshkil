@@ -6,10 +6,12 @@ use Koshkil\Framework\Routing\RoutesManager;
 use Koshkil\Framework\Core\Web\Controller;
 use Koshkil\Framework\Core\Exceptions\ControllerNotFound;
 use Koshkil\Framework\Core\Application;
+use Koshkil\Framework\Support\Session;
 
 class koshkil {
 
 	public function run() {
+		Session::start();
 		RewriteManager::processRules();
 		RoutesManager::processRoutes();
 
