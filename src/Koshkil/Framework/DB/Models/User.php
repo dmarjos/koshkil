@@ -25,6 +25,7 @@ class User extends Model {
 
 	public $indexField="usr_id";
 
+	//public function
 	protected function setupTableStructure() {
 		$this->structure=[
 			"fields"=>[
@@ -37,7 +38,7 @@ class User extends Model {
 				"usr_last_name"=>array("type"=>"varchar","length"=>"255","extra"=>"NOT NULL DEFAULT ''",),
 				"usr_email"=>array("type"=>"varchar","length"=>"255","extra"=>"NOT NULL DEFAULT ''",),
 				"usr_created"=>array("type"=>"datetime","length"=>"","extra"=>"NOT NULL DEFAULT '0000-00-00 00:00:00'",),
-				"usr_hash"=>array("type"=>"varchar","length"=>"255","extra"=>"NOT NULL",),
+				"usr_hash"=>array("type"=>"varchar","length"=>"255","extra"=>"NOT NULL DEFAULT ''",),
 				"usr_last_visit"=>array("type"=>"datetime","length"=>"","extra"=>"NOT NULL DEFAULT '0000-00-00 00:00:00'",),
 				"usr_reset_password"=>array("type"=>"datetime","length"=>"","extra"=>"NOT NULL DEFAULT '0000-00-00 00:00:00'",),
 			],
@@ -58,5 +59,23 @@ class User extends Model {
 				]
 			],
 		];
+	}
+
+	public function hasRoles($roles) {
+		if (is_array($roles)) $roles=implode("|",$roles);
+		$rolesAssigned=$this->hasMany('UserRole','usr_id','usr_id');
+		foreach($rolesAssigned as $userRole) {
+			if(in_array(strtolower($userRole->role->rol_name),explode("|",strtolower($roles))))
+				return true;
+		}
+		return false;
+	}
+
+	public function hasRules($rules) {
+		return true;
+	}
+
+	public function hasRolesOrRules($roles,$rules) {
+		return $this->hasRoles($roles) || $this->hasRules($rules);
 	}
 }

@@ -41,4 +41,9 @@ class Widget extends Controller {
 		return $this->view->fetch("{$templateName}.tpl");
 	}
 
+	public function save($name) {
+		Application::setWidgetParameters($name, $this->parameters);
+	}
+
+
 }

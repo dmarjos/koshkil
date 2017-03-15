@@ -5,6 +5,7 @@ use Koshkil\Framework\DB\QueryBuilder;
 use Koshkil\Framework\Support\StringUtils;
 use Koshkil\Framework\Core\Application;
 use Koshkil\Framework\DB\Structure\Manager;
+use Koshkil\Framework\Core\Exceptions\DB\ModelNotFound;
 
 class Model implements \ArrayAccess {
 
@@ -55,22 +56,53 @@ class Model implements \ArrayAccess {
 		return $this->qb;
 	}
 
-	protected function belongsTo() {
-		$parameters=func_get_args();
-		$relatedModel=array_shift($parameters);
-
+	private function loadRelatedModel($relatedModel) {
 		$modelNamespace="/Models/".$relatedModel;
 		$model=Application::get("APPLICATION_DIR")."{$modelNamespace}";
 		$modelNamespace="app";
 		if(Application::get("APP_NAME"))
 			$modelNamespace.="\\".Application::get("APP_NAME");
 		$modelNamespace.="\\Models\\{$relatedModel}";
+		if (file_exists("{$model}.php")) {
+			require_once($model.".php");
+			return $modelNamespace;
+		}
+		$modelNamespace="/Models/".$relatedModel;
+		$model=Application::get("VENDOR_DIR")."/Framework/DB{$modelNamespace}";
+		$modelNamespace="Koshkil\\Framework\\DB";
+		$modelNamespace.="\\Models\\{$relatedModel}";
+		if (file_exists("{$model}.php")) {
+			require_once($model.".php");
+			return $modelNamespace;
+		}
+		throw new ModelNotFound("Model {$relatedModel} was not found either in application namespace or global framework namespace");
+	}
+
+	protected function hasMany() {
+
+		$parameters=func_get_args();
+		$relatedModel=array_shift($parameters);
+		$modelNamespace=$this->loadRelatedModel($relatedModel);
 		//dump_var($model);
-		require_once($model.".php");
-		$dummyModel=new $modelNamespace();
 		$localValue=array_shift($parameters);
 		$relatedPrimaryKey=array_shift($parameters);
 
+		if (is_null($relatedPrimaryKey) && is_null($localValue)) {
+			return $modelNamespace::where($modelNamespace::getIndexField(),$this->{$modelNamespace::getIndexField()})->get();
+		} else if (!is_null($localValue) && is_null($relatedPrimaryKey)) {
+			return $modelNamespace::where($modelNamespace::getIndexField(),$this->{$localValue})->get();
+		} else {
+			return $modelNamespace::where($relatedPrimaryKey,$this->{$localValue})->get();
+		}
+	}
+	protected function belongsTo() {
+		$parameters=func_get_args();
+		$relatedModel=array_shift($parameters);
+		$modelNamespace=$this->loadRelatedModel($relatedModel);
+		//dump_var($model);
+		$localValue=array_shift($parameters);
+		$relatedPrimaryKey=array_shift($parameters);
+//		dump_var([$relatedPrimaryKey,$localValue]);
 		if (is_null($relatedPrimaryKey) && is_null($localValue)) {
 			return $modelNamespace::find($this->{$modelNamespace::getIndexField()});
 		} else if (!is_null($localValue) && is_null($relatedPrimaryKey)) {

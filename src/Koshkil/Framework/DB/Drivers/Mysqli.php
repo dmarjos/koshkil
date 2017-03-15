@@ -45,7 +45,7 @@ class MysqliDriver {
 		$retVal=$this->handler->query($sql);
 		if (!$retVal) {
 			error_log("[ERROR SQL]: ".$sql." (".\mysqli_error($this->handler).")");
-			throw new QueryError("Error al ejecutar SQL: ".\mysqli_error($this->handler));
+			throw new QueryError("Error al ejecutar SQL: ".\mysqli_error($this->handler)."\nSQL: {$sql}");
 		}
 		return $retVal;
 	}

@@ -47,6 +47,7 @@ class koshkil {
 		$controllerNamespace.="/Controllers".dirname($uri);
 		$controller=Application::get("APPLICATION_DIR")."/Controllers".$uri.".php";
 		Application::set("RUNNING_CONTROLLER",$uri);
+		Application::set("SELF",$_SERVER["REQUEST_URI"]);
 
 		if (!file_exists($controller)) {
 			$defaultController=Application::get("DEFAULT_CONTROLLER");

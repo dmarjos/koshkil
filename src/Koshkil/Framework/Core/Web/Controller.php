@@ -5,15 +5,16 @@ use Koshkil\Framework\Core\Web\Support\Request;
 use Koshkil\Framework\Core\Exceptions\TemplateNotFound;
 use Koshkil\Framework\Core\Application;
 use Koshkil\Framework\Support\Session\Auth;
+use Koshkil\Framework\Support\Session\FlashMessages;
 
 abstract class Controller {
 
-	protected $lifeCycle=["create","init","run","output"];
+	protected $lifeCycle=["create","init","run"];
 	public $view=null;
 	public $templateFile="";
 
 	public function __construct() {
-
+		$this->initializeLifeCycle();
 		if (Application::get("DISABLE_CACHE")) {
 			header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 			header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
@@ -24,6 +25,7 @@ abstract class Controller {
 		$this->view->addPluginsDir(Application::get("VENDOR_DIR")."/3rdparty/smarty/plugins");
 		$this->view->registerClass('Application','Koshkil\Framework\Core\Application');
 		$this->view->registerClass('Auth','Koshkil\Framework\Support\Session\Auth');
+		$this->view->registerClass('Session','Koshkil\Framework\Support\Session');
 
 		$this->templateFile="main.tpl";
 		//dump_var($this->view);
@@ -37,6 +39,9 @@ abstract class Controller {
 		Auth::setAuthNamespace('frontend');
 	}
 
+	protected function initializeLifeCycle() {
+		$this->lifeCycle=["create","init","run"];
+	}
 	protected function create(Request $request) {
 		return true;
 	}
@@ -61,6 +66,7 @@ abstract class Controller {
 
        	$this->view->assign("template",$this->getTemplateName());
         $this->view->display($this->templateFile);
+		FlashMessages::clearMessages();
 		return true;
 	}
 
@@ -107,6 +113,7 @@ abstract class Controller {
 			if(call_user_func([$this,$method],$request)===false)
 				break;
 		}
+		$this->output($request);
 	}
 
 }

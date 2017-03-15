@@ -1,6 +1,7 @@
 <?php
 namespace Koshkil\Framework\Core\Web\Support;
 
+use Koshkil\Framework\Core\Application;
 class Request implements \ArrayAccess {
 
 	private $items=[];
@@ -43,6 +44,10 @@ class Request implements \ArrayAccess {
 		return array_keys($_FILES);
 	}
 
+	public function redirect($uri) {
+		header("location: ".Application::getAsset($uri));
+		die();
+	}
 	/**
 	 * This is a wrapper meant to get the uploaded files in a coherent way thru code.
 	 *

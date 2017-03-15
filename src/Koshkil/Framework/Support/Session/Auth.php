@@ -8,11 +8,15 @@ use Koshkil\Framework\Core\Web\Support\Request;
 use Koshkil\Framework\Core\Application;
 use Koshkil\Framework\Core\Exceptions\UnkownUserKind;
 use Koshkil\Framework\Support\PasswordUtils;
+use Koshkil\Framework\Core\Traits\ModelDriven\HandlesModels;
 
 class Auth extends Session {
+	use HandlesModels;
 
 	protected static $failedLoginMessage="The credentials doesn't match with our records";
 	protected static $successfulLoginMessage="Successful Login!";
+	protected static $successfulLogoutMessage="Session Closed!";
+
 	protected static $currentUser=[
 		"backend"=>false,
 		"frontend"=>false
@@ -28,6 +32,15 @@ class Auth extends Session {
 	public static function setFailedLoginMessage($message) {
 		self::$failedLoginMessage=$message;
 	}
+
+	public static function setSuccessfulLoginMessage($message) {
+		self::$successfulLoginMessage=$message;
+	}
+
+	public static function setSuccessfulLogoutMessage($message) {
+		self::$successfulLogoutMessage=$message;
+	}
+
 	public static function setUserModel($userModel) {
 		self::$userModel=$userModel;
 	}
@@ -58,16 +71,17 @@ class Auth extends Session {
 		return self::$currentUser[$area];
 	}
 
+	public static function logout() {
+		$area=self::$authNamespace;
+		self::set("LOGIN_MESSAGE",self::$successfulLogoutMessage);
+		self::$currentUser[$area]=false;
+		self::saveSession();
+	}
 	public static function login(Request $request, $credentials=[]) {
 		if (empty($credentials)) {
 			$credentials=self::$credentials;
 		}
-		$modelPath=explode("\\",self::$userModel);
-		$rootNamespace=array_shift($modelPath);
-		if ($rootNamespace=="App") $rootNamespace="app";
-		array_unshift($modelPath, $rootNamespace);
-		$modelPath=implode("/",$modelPath);
-		require_once(Application::get("PHYS_PATH")."/".$modelPath.".php");
+		self::loadModel(self::$userModel);
 		$userModel=new self::$userModel();
 		$userQB=$userModel->builder();
 		foreach($credentials as $reqField => $tblField) {
@@ -80,25 +94,31 @@ class Auth extends Session {
 				$userQB->where($tblField,$request->{$reqField});
 		}
 		$user=$userQB->first(get_class($userModel));
-		foreach($credentials as $reqField => $tblField) {
-			$tblFieldParameters=explode("|",$tblField);
-			$tblField=$tblFieldParameters[0];
-			if (isset($tblFieldParameters[1])) {
-				if ($tblFieldParameters[1]=="password") {
-					$passOk=PasswordUtils::createHash($request->{$reqField},$user->{$tblField});
-					if ($passOk) {
-						$area=self::$authNamespace;
-						self::$currentUser[$area]=$user;
-						self::set("LOGIN_MESSAGE",self::$successfulLoginMessage);
-						self::saveSession();
-						return true;
-					} else {
-						self::set("LOGIN_MESSAGE",self::$failedLoginMessage);
-						self::saveSession();
-						return false;
+		if ($user) {
+			foreach($credentials as $reqField => $tblField) {
+				$tblFieldParameters=explode("|",$tblField);
+				$tblField=$tblFieldParameters[0];
+				if (isset($tblFieldParameters[1])) {
+					if ($tblFieldParameters[1]=="password") {
+						$passOk=PasswordUtils::createHash($request->{$reqField},$user->{$tblField});
+						if ($passOk) {
+							$area=self::$authNamespace;
+							self::$currentUser[$area]=$user;
+							self::set("LOGIN_MESSAGE",self::$successfulLoginMessage);
+							self::saveSession();
+							return true;
+						} else {
+							self::set("LOGIN_MESSAGE",self::$failedLoginMessage);
+							self::saveSession();
+							return false;
+						}
 					}
 				}
 			}
+		} else {
+			self::set("LOGIN_MESSAGE",self::$failedLoginMessage);
+			self::saveSession();
+			return false;
 		}
 		$area=self::$authNamespace;
 		self::$currentUser[$area]=$user;

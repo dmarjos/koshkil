@@ -6,7 +6,12 @@ use Koshkil\Framework\Core\Application;
 
 class RewriteManager {
 
-	private static $rules=array();
+	private static $rules=[
+		["rule"=>'^(.*)/([0-9]*)/(edit|delete|up|down)$',"target"=>'$1?id=$2&action=$3',"flags"=>"L,NC","debug"=>false],
+		["rule"=>'^(.*)/addnew$',"target"=>'$1?&action=addnew',"flags"=>"L,NC","debug"=>false],
+		["rule"=>'^js/widgets/([^\.]*)\.js$',"target"=>'/?runComponent=widget&component=$1&method=javascript',"flags"=>"L,NC","debug"=>false],
+		["rule"=>'^js/controllers/([^\.]*)\.js$',"target"=>'/$1?before_create=javascript',"flags"=>"NC","debug"=>false],
+	];
 
 	public static function addRule($expression,$rewrite,$flags="L,NC") {
 		self::$rules[]=array("rule"=>$expression,"target"=>$rewrite,"flags"=>$flags);

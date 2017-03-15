@@ -256,6 +256,9 @@ class Application {
 
 		$styles[$fileName] = $path;
 		Application::set("styles", $styles);
+	}
 
+	public static function i18nString($identificator,$deault) {
+		return $default;
 	}
 }

@@ -33,8 +33,10 @@ class Manager {
 		if (!$tableExists) {
 			$db->execute($createTable);
 			if ($structure["initial_records"]) {
-				foreach($structure["initial_records"] as $data)
-					$model->create($data);
+				$modelClass=get_class($model);
+				foreach($structure["initial_records"] as $data) {
+					$modelClass::create($data);
+				}
 			}
 		} else {
 			$rec=$db->getRow("show create table {$tbl_name}");

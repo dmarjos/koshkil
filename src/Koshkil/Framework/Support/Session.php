@@ -15,4 +15,7 @@ class Session {
 		return $_SESSION[$var];
 	}
 
+	public static function dumpSession() {
+		dump_var($_SESSION);
+	}
 }
